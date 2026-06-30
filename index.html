@@ -178,7 +178,7 @@
                 <button class="tool-btn" data-cmd="bold" style="font-weight: bold;">B</button>
                 <button class="tool-btn" data-cmd="italic" style="font-weight: italic;">I</button>
                 <button class="tool-btn" data-cmd="underline" style="text-decoration: underline;">U</button>
-                <button class="tool-btn" data-cmd="strikethrough" style="text-decoration: line-through;">S</button>
+                <button class="tool-btn" data-cmd="strikeThrough" style="text-decoration: line-through;">S</button>
             </div>
             <div id="editor" contenteditable="true"></div>
         </div>
@@ -207,16 +207,16 @@
                 li.onclick = () => selectNote(note.id);
                 const title = document.createElement('div');
                 title.className = 'note-title';
-                title.textContent = note-title && note-title.trim() ? note.title : 'untitled note';
+                title.textContent = note-title && note.title.trim() ? note.title : 'untitled note';
                 const delBtn = document.createElement('button');
-                delBtm.className = 'delete-btn';
+                delBtn.className = 'delete-btn';
                 delBtn.textContent = 'delete';
                 delBtn.onclick = (e) => {
                     e.stopPropagation();
                     deleteNote(note.id);
                 };
                 li.appendChild(title);
-                li.appendChid(delBtn);
+                li.appendChild(delBtn);
                 noteListEl.appendChild(li);
             });
         }
@@ -235,7 +235,7 @@
                 titleInputEl.value = note.title;
                 editorEl.innerHTML = note.content;
             }
-            renderist();
+            renderList();
         }
         function deleteNote(id) {
             notes = notes.filter(n => n.id !== id);
@@ -256,7 +256,7 @@
                 localStorage.setItem('browser-notes', JSON.stringify(notes));
             }
         });
-        titleInputEL.addEventListener('input', (e) => {
+        titleInputEl.addEventListener('input', (e) => {
             if (!activeNoteId) return;
             const note = notes.find(n => n.id === activeNoteId);
             if (note) {
