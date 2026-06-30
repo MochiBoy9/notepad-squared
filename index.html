@@ -18,7 +18,7 @@
             color: #333;
         }
         #sidebar {
-            width: 280 px;
+            width: 280px;
             background-color: #ffffff;
             border-right: 1px solid #e4e4e7;
             display: flex;
@@ -102,17 +102,52 @@
             padding: 20px;
         }
         #editor {
-            flex: 1;
+        flex: 1;
+        width: 100%;
+        border: 1px solid #e4e4e7;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+        padding: 30px;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        outline: none;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        overflow-y: auto;
+        background-color: #ffffff;
+        background-image: radial-gradient(#d1d1d6 1.5px, transparent 1.5px);
+        background-size: 26px 26px;
+        }
+        #note-title-input {
             width: 100%;
-            resize: none;
-            border: 1px solid #e4e4e7;
-            border-radius: 8px;
-            padding: 20px;
-            font-size: 1.1rem;
-            font-family: inherit;
-            line-height: 1.6;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border: none;
+            background: transparent;
             outline: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            padding: 5px 0;
+        }
+        #toolbar {
+            display: flex;
+            gap: 5px;
+            background: #ffffff;
+            padding: 8px;
+            border: 1px solid #e4e4e7;
+            border-bottom: none;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .tool-btn {
+            background: #fff;
+            border: 1px solid #e4e4e7;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .tool-btn:hover {
+            background: #f4f4f5;
         }
         .empty-state {
             display: flex;
@@ -137,90 +172,112 @@
             <h2>no note found</h2>
             <p>you can find notes on ur sidebar, and you can also make new ones.</p>
         </div>
-        <textarea id="editor" style="display: none;" placeholder="start typing here..."></textarea>
+        <div id="editor-wrapper" style="display: none; flex: 1; flex-direction: column;">
+            <input type="text" id="note-title-input" placeholder="start typing here...">
+            <div id="toolbar">
+                <button class="tool-btn" data-cmd="bold" style="font-weight: bold;">B</button>
+                <button class="tool-btn" data-cmd="italic" style="font-weight: italic;">I</button>
+                <button class="tool-btn" data-cmd="underline" style="text-decoration: underline;">U</button>
+                <button class="tool-btn" data-cmd="strikethrough" style="text-decoration: line-through;">S</button>
+            </div>
+            <div id="editor" contenteditable="true"></div>
+        </div>
     </div>
 
     <script>
         const noteListEl = document.getElementById('note-list');
-        const editorEl = document.getElementById('editor');
+        const editorEl = document.getElementById('editor')
+        const titleInputEl = document.getElementById('note-title-input');
         const emptyStateEl = document.getElementById('empty-state');
+        const editorWrapperEl = document.getElementById('editor-wrapper');
         const newNoteBtn = document.getElementById('new-note-btn');
-        let notes = JSON.prase(localStorage.getItem('browser-notes')) || [];
+        const toolbarButtons = document.querySelectorAll('.tool-btn');
+        let notes = JSON.parse(localStorage.getItem('browser-notes')) || [];
         let activeNoteId = null;
         
         function saveNotes() {
             localStorage.setItem('browser-notes', JSON.stringify(notes));
-            renderList();
+            renderList()
         }
         function renderList() {
             noteListEl.innerHTML = '';
             notes.forEach(note => {
                 const li = document.createElement('li');
                 li.className = `note-item ${note.id === activeNoteId ? 'active' : ''}`;
-                li.onClick = () => selectNote(note.id);
-                const firstLine = note.content.split('\n')[0].trim();
+                li.onclick = () => selectNote(note.id);
                 const title = document.createElement('div');
                 title.className = 'note-title';
-                title.textContent = firstLine ? firstLine : 'new note';
-                const snippet = document.createElement('div');
-                snippet.className = 'note-snippet';
-                snippet.textContent = note.content.length > title.textContent.length
-                    ? '...'
-                    : 'No additional text';
+                title.textContent = note-title && note-title.trim() ? note.title : 'untitled note';
                 const delBtn = document.createElement('button');
-                delBtn.className = 'delete-btn';
+                delBtm.className = 'delete-btn';
                 delBtn.textContent = 'delete';
                 delBtn.onclick = (e) => {
                     e.stopPropagation();
                     deleteNote(note.id);
                 };
                 li.appendChild(title);
-                li.appendChild(snippet);
-                li.appendChild(delBtn);
+                li.appendChid(delBtn);
                 noteListEl.appendChild(li);
             });
         }
         function createNote() {
-            const newNote = { id: Date.now(), content: ''};
+            const newNote = { id: Date.now(), title: '', content:''};
             notes.unshift(newNote);
             selectNote(newNote.id);
             saveNotes();
         }
-        function selectNote (id) {
+        function selectNote(id) {
             activeNoteId = id;
             const note = notes.find(n => n.id === id);
             if (note) {
                 emptyStateEl.style.display = 'none';
-                editorEl.style.display = 'block';
-                editorEl.value = note.content;
-                editorEl.focus();
+                editorWrapperEl.style.display = 'flex';
+                titleInputEl.value = note.title;
+                editorEl.innerHTML = note.content;
             }
-            renderList();
+            renderist();
         }
         function deleteNote(id) {
             notes = notes.filter(n => n.id !== id);
             if (activeNoteId === id) {
                 activeNoteId = null;
                 emptyStateEl.style.display = 'flex';
-                editorEl.style.display = 'none';
-                editorEl.value = '';
+                editorWrapperEl.style.display = 'none';
+                titleInputEl.value = '';
+                editorEl.innerHTML = '';
             }
             saveNotes();
         }
-
-        editorEl.addEventListener('input', (e) => {
+        editorEl.addEventListener('input', () => {
             if (!activeNoteId) return;
             const note = notes.find(n => n.id === activeNoteId);
             if (note) {
-                note.connect = e.target.value;
+                note.content = editorEl.innerHTML;
+                localStorage.setItem('browser-notes', JSON.stringify(notes));
+            }
+        });
+        titleInputEL.addEventListener('input', (e) => {
+            if (!activeNoteId) return;
+            const note = notes.find(n => n.id === activeNoteId);
+            if (note) {
+                note.title = e.target.value;
                 saveNotes();
             }
-        })
+        });
+        toolbarButtons.forEach(button => {
+            button.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const command = button.getAttribute('data-cmd');
+                document.execCommand(command, false, null);
+                editorEl.dispatchEvent(new Event('input'));
+            });
+        });
         newNoteBtn.addEventListener('click', createNote);
         renderList();
         if (notes.length > 0) {
             selectNote(notes[0].id);
         }
+
     </script>
 </body>
 </html>
